@@ -292,7 +292,7 @@ class VectorIndexedBase:
 
         if row is None:
             return None
-
+        vector_list = row["embedding"].to_list()
         return EmbeddingResponse(
             person_id=row["person_id"],
             voice_id=row["voice_id"],

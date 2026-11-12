@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: voice_app
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,8 +16,8 @@ services:
       timeout: 3s
       retries: 20
 
-  api:
-    build: .
+  voice_service:
+    build: ./src/voice_service
     environment:
       DATABASE_URL: postgresql://voice_app:${POSTGRES_PASSWORD}@postgres:5432/voice_db
       MODEL_VERSION: ${MODEL_VERSION:-speaker-model-v1}
@@ -30,6 +30,29 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
-
+    
+  diarization_service:
+    build: ./src/diarization_service
+    command: uvicorn diarization_service.main:app --host 0.0.0.0 --port 8001 --reload
+    environment:
+      HF_TOKEN: ${HF_TOKEN:?Set HF_TOKEN in .env}
+      HF_HOME: /models
+      TORCH_HOME: /models
+      VOICE_SERVICE_URL: http://voice_service:8000
+      IDENTIFICATION_THRESHOLD: "0.80"
+      USE_GPU: "false"
+      MIN_SEGMENT_DURATION: "0.5"
+      MAX_UPLOAD_SIZE_MB: "500"
+    depends_on:
+      voice_service:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - ./models:/models
+      - ./test.wav:/tmp/test.wav:ro
+      - ./src/diarization_service:/app/diarization_service
+      - /app/diarization_service/.venv
+    restart: unless-stopped
 volumes:
   postgres_data:

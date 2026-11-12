@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE voices (
     id UUID PRIMARY KEY,
-    embedding VECTOR(512) NOT NULL,
+    embedding VECTOR(256) NOT NULL,
     model_version TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -21,7 +21,7 @@ CREATE TABLE persons (
 CREATE TABLE vector_index_config (
     id SMALLINT PRIMARY KEY CHECK (id = 1),
     embedding_dimension INTEGER NOT NULL
-        CHECK (embedding_dimension = 512),
+        CHECK (embedding_dimension = 256),
     model_version TEXT NOT NULL,
     distance_metric TEXT NOT NULL
         CHECK (distance_metric = 'cosine')

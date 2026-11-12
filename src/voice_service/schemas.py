@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-DIMENSION = 512
+DIMENSION = 256
 
 Embedding = Annotated[
     list[float],

@@ -6,3 +6,193 @@ __pycache__/
 .env
 
 emb.py
+
+.pytest_cache
+
+*.json
+
+*.wav
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Тесты и линтеры
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# ==========================================
+# Poetry
+# ==========================================
+# poetry.lock и pyproject.toml — КОММИТИМ (они нужны для воспроизводимости)
+# Игнорируем только локальные кэши Poetry
+.poetry-cache/
+
+# ==========================================
+# Окружение (.env)
+# ==========================================
+# .env — НИКОГДА не коммитить (там токены и пароли)
+.env
+.env.local
+.env.*.local
+*.env
+
+# .env.example — КОММИТИМ (он нужен как образец)
+!.env.example
+
+# ==========================================
+# IDE / редакторы
+# ==========================================
+# VS Code
+.vscode/
+*.code-workspace
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+.elc
+
+# ==========================================
+# Операционная система
+# ==========================================
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+ $RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ==========================================
+# Docker
+# ==========================================
+# docker-compose.yml — КОММИТИМ
+# Dockerfile — КОММИТИМ
+# Игнорируем только локальные кэши Docker
+.docker/
+
+# ==========================================
+# Кэш моделей HuggingFace
+# ==========================================
+# Папка для кэша HF-моделей (проброшена через volume в docker-compose)
+models/
+
+# ==========================================
+# Тестовые аудиофайлы
+# ==========================================
+# Никогда не коммитим аудио — они большие и не относятся к коду
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.aac
+*.mp4
+*.avi
+*.mov
+
+# Но разрешаем медиа в документации/тестах (если будут)
+!docs/**/*.wav
+!docs/**/*.mp3
+!tests/fixtures/**/*.wav
+!tests/fixtures/**/*.mp3
+
+# ==========================================
+# Логи и временные файлы
+# ==========================================
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+
+
+# ==========================================
+# Секреты и токены
+# ==========================================
+# Если вдруг случайно создадите файлы с токенами
+*secret*
+*token*
+*.pem
+*.key
