@@ -18,6 +18,15 @@ class Segment(BaseModel):
         max_length=EMBEDDING_DIM,
         description=f"{EMBEDDING_DIM}-мерный эмбеддинг сегмента",
     )
+    is_overlap: bool = Field(
+        default=False,
+        description="true, если сегмент содержит перебивание (несколько голосов одновременно)",
+    )
+    overlap_duration: float = Field(
+        default=0.0,
+        ge=0.0,
+        description="Длительность пересечения с другим сегментом, секунды",
+    )
 
     person_id: str | None = Field(
         default=None,
@@ -65,3 +74,36 @@ class ModerateRequest(BaseModel):
 class ModerateResponse(BaseModel):
     person_id: str
     voice_id: str
+
+class Word(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(description="Само слово")
+    start: float = Field(ge=0.0, description="Начало, секунды")
+    end: float = Field(ge=0.0, description="Конец, секунды")
+    probability: float = Field(ge=0.0, le=1.0, description="Уверенность Whisper")
+
+
+class TranscribeResponse(BaseModel):
+    language: str = Field(description="Язык транскрибации")
+    words: list[Word]
+
+class ProcessedSegment(BaseModel):
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    start: float = Field(ge=0.0)
+    end: float = Field(ge=0.0)
+    speaker_label: str
+    person_id: str | None = None
+    similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+    needs_moderation: bool
+    is_overlap: bool = False
+    text: str = Field(description="Текст, сказанный в этом сегменте")
+    # words: list[Word] = Field(description="Слова с таймкодами, попавшие в сегмент")
+
+class ProcessResponse(BaseModel):
+
+    segments: list[ProcessedSegment]
+    language: str

@@ -49,3 +49,13 @@ class VoiceServiceClient:
 
     async def close(self) -> None:
         await self._client.aclose()
+
+    async def get_person(self, person_id: str) -> dict | None:
+        try:
+            r = await self._client.get(f"/api/v1/persons/{person_id}")
+            if r.status_code == 404:
+                return None
+            r.raise_for_status()
+            return r.json()
+        except httpx.HTTPError:
+            return None

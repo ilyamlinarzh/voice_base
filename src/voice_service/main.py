@@ -50,7 +50,7 @@ def create_app() -> FastAPI:
         payload: IdentifyRequest,
         store: VectorIndexedBase = Depends(get_store),
     ) -> IdentifyResponse:
-        match = await store.identify(
+        match, similarity = await store.identify(
             payload.embedding,
             threshold=settings.identification_threshold,
         )
@@ -58,10 +58,10 @@ def create_app() -> FastAPI:
             return IdentifyResponse(
                 identified=False,
                 person=None,
-                similarity=None,
+                similarity=similarity,
             )
 
-        person, similarity = match
+        person, _ = match, similarity
         return IdentifyResponse(
             identified=True,
             person=person,

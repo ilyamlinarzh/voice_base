@@ -7,6 +7,12 @@ from .config import Settings
 from .pipeline.diarization import Diarizer
 from .pipeline.embedding import EmbeddingExtractor
 from .pipeline.identification import VoiceServiceClient
+from .pipeline.asr import WhisperTranscriber
+
+from .api.diarize import router as diarize_router
+from .api.process import router as process_router
+from .api.transcribe import router as transcribe_router
+from .api.protocol import router as protocol_router
 
 
 @asynccontextmanager
@@ -27,6 +33,10 @@ async def lifespan(app: FastAPI):
     app.state.voice_client = VoiceServiceClient(
         base_url=settings.voice_service_url,
     )
+    app.state.transcriber = WhisperTranscriber(
+        model_size=settings.whisper_model_size,
+        use_gpu=settings.use_gpu,
+    )
 
     try:
         yield
@@ -45,7 +55,9 @@ app = FastAPI(
 )
 
 app.include_router(diarize_router)
-
+app.include_router(transcribe_router)
+app.include_router(process_router)
+app.include_router(protocol_router)
 
 @app.get("/health/live", tags=["health"])
 async def health_live() -> dict[str, str]:

@@ -1,9 +1,3 @@
-"""POST /api/v1/diarize — главный эндпоинт.
-
-Принимает аудиофайл, прогоняет через pyannote Pipeline, для каждого сегмента
-извлекает эмбеддинг и идентифицирует через voice_service.
-"""
-
 import asyncio
 import os
 import tempfile
@@ -47,6 +41,22 @@ def get_settings(request: Request) -> Settings:
     return _get_state(request, "settings")
 
 
+async def _identify_embedding(
+    emb_list: list[float],
+    voice_client: VoiceServiceClient,
+    threshold: float,
+) -> tuple[bool, dict, float | None]:
+
+    try:
+        id_resp = await voice_client.identify(emb_list, threshold)
+        identified = bool(id_resp.get("identified"))
+        person = id_resp.get("person") or {}
+        similarity = id_resp.get("similarity")
+        return identified, person, similarity
+    except httpx.HTTPError:
+        return False, {}, None
+
+
 @router.post("/diarize", response_model=DiarizeResponse)
 async def diarize(
     audio: UploadFile = File(..., description="Аудиофайл (WAV/MP3/M4A)"),
@@ -79,28 +89,24 @@ async def diarize(
             settings.min_segment_duration,
         )
 
-        def _extract_all() -> list[tuple[dict, list[float]]]:
+        def _extract_with_clean() -> list[tuple[dict, list[float]]]:
             result = []
             for seg in raw_segments:
-                emb = extractor.extract(tmp_path, seg["start"], seg["end"])
+                clean_intervals = Diarizer.clean_subsegments(seg)
+                if not clean_intervals:
+                    emb = extractor.extract(tmp_path, seg["start"], seg["end"])
+                else:
+                    longest = max(clean_intervals, key=lambda iv: iv[1] - iv[0])
+                    emb = extractor.extract(tmp_path, longest[0], longest[1])
                 result.append((seg, emb.tolist()))
             return result
 
-        extracted = await asyncio.to_thread(_extract_all)
-
+        extracted = await asyncio.to_thread(_extract_with_clean)
         segments: list[Segment] = []
         for seg, emb_list in extracted:
-            try:
-                id_resp = await voice_client.identify(
-                    emb_list, settings.identification_threshold
-                )
-                identified = bool(id_resp.get("identified"))
-                person = id_resp.get("person") or {}
-                similarity = id_resp.get("similarity")
-            except httpx.HTTPError:
-                identified = False
-                person = {}
-                similarity = None
+            identified, person, similarity = await _identify_embedding(
+                emb_list, voice_client, settings.identification_threshold
+            )
 
             segments.append(
                 Segment(
@@ -109,8 +115,14 @@ async def diarize(
                     end=seg["end"],
                     speaker_label=seg["speaker_label"],
                     embedding=emb_list,
+                    is_overlap=seg.get("is_overlap", False),
+                    overlap_duration=seg.get("overlap_duration", 0.0),
                     person_id=person.get("id") if identified else None,
-                    similarity=float(similarity) if identified and similarity is not None else None,
+                    similarity=(
+                        float(similarity)
+                        if identified and similarity is not None
+                        else None
+                    ),
                     needs_moderation=not identified,
                 )
             )
