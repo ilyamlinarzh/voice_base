@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cpu \
     "torch>=2.15.0,<3.0.0" \
     "torchaudio>=2.11.1,<3.0.0"
-
+    
+RUN pip install --no-cache-dir soundfile
 # Копируем исходники
 COPY . ./diarization_service/
 

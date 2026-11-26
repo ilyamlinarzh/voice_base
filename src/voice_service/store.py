@@ -229,14 +229,14 @@ class VectorIndexedBase:
                 """,
                 (vector, self.model_version, vector),
             )
-            row = await cursor.fetchone()
+        row = await cursor.fetchone()
 
         if row is None:
-            return None
+            return None, 0.0
 
         similarity = float(row["similarity"])
         if similarity < threshold:
-            return None
+            return None, similarity
 
         return (
             PersonResponse(

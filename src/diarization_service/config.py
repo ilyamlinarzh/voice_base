@@ -19,8 +19,10 @@ class Settings(BaseSettings):
 
     pyannote_model: str = "pyannote/speaker-diarization-3.1"
     embedding_model: str = "pyannote/wespeaker-voxceleb-resnet34-LM"
-
     max_upload_size_mb: int = Field(default=500, ge=1)
+
+    whisper_model_size: str = "small"
+    whisper_language: str = "ru"
 
 
 settings = Settings()
